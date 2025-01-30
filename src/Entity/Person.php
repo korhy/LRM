@@ -47,9 +47,16 @@ class Person
     #[ORM\Column(nullable: true)]
     private ?bool $alert_befor_vacation = null;
 
+    /**
+     * @var Collection<int, Request>
+     */
+    #[ORM\OneToMany(targetEntity: Request::class, mappedBy: 'collaborator_id')]
+    private Collection $requests;
+
     public function __construct()
     {
         $this->collaborator = new ArrayCollection();
+        $this->requests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -186,6 +193,36 @@ class Person
     public function setAlertBeforVacation(?bool $alert_befor_vacation): static
     {
         $this->alert_befor_vacation = $alert_befor_vacation;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Request>
+     */
+    public function getRequests(): Collection
+    {
+        return $this->requests;
+    }
+
+    public function addRequest(Request $request): static
+    {
+        if (!$this->requests->contains($request)) {
+            $this->requests->add($request);
+            $request->setCollaboratorId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRequest(Request $request): static
+    {
+        if ($this->requests->removeElement($request)) {
+            // set the owning side to null (unless already changed)
+            if ($request->getCollaboratorId() === $this) {
+                $request->setCollaboratorId(null);
+            }
+        }
 
         return $this;
     }
